@@ -13,4 +13,9 @@ docs/
 # Dotenv file
 .env
 
-.vscode/
+broadcast/
+lib/
+report/
+lcov.info
+.vscode
+.DS_Store
