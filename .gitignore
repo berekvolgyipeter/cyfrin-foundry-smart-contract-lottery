@@ -18,3 +18,4 @@ report/
 lcov.info
 .vscode
 .DS_Store
+remappings.txt
