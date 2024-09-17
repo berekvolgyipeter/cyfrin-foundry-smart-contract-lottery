@@ -19,6 +19,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     /* State variables */
     // Chainlink VRF Variables
+    uint256 private immutable i_subscriptionId;
+    bytes32 private immutable i_gasLane;
+    uint32 private immutable i_callbackGasLimit;
+    uint16 private constant REQUEST_CONFIRMATIONS = 3;
+    uint32 private constant NUM_WORDS = 1;
 
     // Lottery Variables
     uint256 private immutable i_entranceFee;
@@ -30,7 +35,18 @@ contract Raffle is VRFConsumerBaseV2Plus {
     event EnteredRaffle(address indexed player);
 
     /* Functions */
-    constructor(uint256 entranceFee, uint256 interval, address vrfCoordinator) VRFConsumerBaseV2Plus(vrfCoordinator) {
+    constructor(
+        uint256 subscriptionId,
+        bytes32 gasLane, // keyHash
+        uint32 callbackGasLimit,
+        uint256 entranceFee,
+        uint256 interval,
+        address vrfCoordinatorV2
+    ) VRFConsumerBaseV2Plus(vrfCoordinatorV2) {
+        i_subscriptionId = subscriptionId;
+        i_gasLane = gasLane;
+        i_callbackGasLimit = callbackGasLimit;
+
         i_entranceFee = entranceFee;
         i_interval = interval;
         s_lastTimeStamp = block.timestamp;
@@ -49,20 +65,20 @@ contract Raffle is VRFConsumerBaseV2Plus {
             revert(); // TODO: implement custom error
         }
 
-        requestId = s_vrfCoordinator.requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest({
-                keyHash: s_keyHash,
-                subId: s_subscriptionId,
-                requestConfirmations: requestConfirmations,
-                callbackGasLimit: callbackGasLimit,
-                numWords: numWords,
-                // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
-                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
-            })
-        );
+        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
+            keyHash: i_gasLane,
+            subId: i_subscriptionId,
+            requestConfirmations: REQUEST_CONFIRMATIONS,
+            callbackGasLimit: i_callbackGasLimit,
+            numWords: NUM_WORDS,
+            // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
+            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+        });
+
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {}
+    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {}
 
     /* Getter Functions */
     function getEntranceFee() public view returns (uint256) {
