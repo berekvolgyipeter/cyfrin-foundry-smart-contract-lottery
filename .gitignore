@@ -17,4 +17,6 @@ report/
 lcov.info
 .vscode
 .DS_Store
+dependencies/
 remappings.txt
+soldeer.lock

@@ -10,20 +10,15 @@ help:
 	@echo ""
 	@echo "  make fund [ARGS=...]\n    example: make deploy ARGS=\"--network sepolia\""
 
-all: clean remove install remappings build
+all: clean remove install update build
 
-# Clean the repo
 clean  :; forge clean
 
-# Remove modules
-remove :; rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gitmodules && rm -rf remappings.txt
+remove :; rm -rf dependencies/ && rm soldeer.lock
 
-install :; forge install cyfrin/foundry-devops@0.2.3 --no-commit && forge install smartcontractkit/chainlink-brownie-contracts@1.2.0 --no-commit && forge install foundry-rs/forge-std@v1.9.2 --no-commit && forge install transmissions11/solmate@v6 --no-commit
+install :; forge soldeer install
 
-remappings :; forge remappings > remappings.txt
-
-# Update Dependencies
-update:; forge update
+update:; forge soldeer update
 
 build:; forge build
 
