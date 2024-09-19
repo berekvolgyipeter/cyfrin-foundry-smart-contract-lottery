@@ -10,7 +10,7 @@ import {AutomationCompatibleInterface} from "chainlink/automation/interfaces/Aut
  * @title A sample Raffle Contract
  * @author Peter Berekvolgyi
  * @notice This contract is for creating a sample raffle contract
- * @dev This implements the Chainlink VRF Version 2
+ * @dev This implements the Chainlink VRF Version 2.5
  */
 contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     /* ---------- Errors ---------- */
@@ -52,8 +52,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         uint32 callbackGasLimit,
         uint256 entranceFee,
         uint256 interval,
-        address vrfCoordinatorV2
-    ) VRFConsumerBaseV2Plus(vrfCoordinatorV2) {
+        address vrfCoordinatorV2_5
+    ) VRFConsumerBaseV2Plus(vrfCoordinatorV2_5) {
         i_subscriptionId = subscriptionId;
         i_gasLane = gasLane;
         i_callbackGasLimit = callbackGasLimit;
