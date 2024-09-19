@@ -20,6 +20,9 @@ contract TestRaffle is Test {
     uint256 interval;
     address vrfCoordinatorV2_5;
 
+    event EnteredRaffle(address indexed player);
+    event WinnerPicked(address indexed winner);
+
     function setUp() external {
         DeployRaffle deployer = new DeployRaffle();
         (raffle, helperConfig) = deployer.run();
@@ -53,5 +56,12 @@ contract TestRaffle is Test {
 
         assert(raffle.getNumberOfPlayers() == 1);
         assert(raffle.getPlayer(0) == PLAYER);
+    }
+
+    function testEnteringRaffleEmitsEvent() public {
+        vm.prank(PLAYER);
+        vm.expectEmit(true, false, false, false, address(raffle));
+        emit EnteredRaffle(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
     }
 }
