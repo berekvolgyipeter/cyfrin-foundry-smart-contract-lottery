@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 
 import {VRFConsumerBaseV2Plus} from "chainlink/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "chainlink/vrf/dev/libraries/VRFV2PlusClient.sol";
+import {AutomationCompatibleInterface} from "chainlink/automation/interfaces/AutomationCompatibleInterface.sol";
 
 /**
  * @title A sample Raffle Contract
@@ -11,19 +12,20 @@ import {VRFV2PlusClient} from "chainlink/vrf/dev/libraries/VRFV2PlusClient.sol";
  * @notice This contract is for creating a sample raffle contract
  * @dev This implements the Chainlink VRF Version 2
  */
-contract Raffle is VRFConsumerBaseV2Plus {
-    /* Errors */
+contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
+    /* ---------- Errors ---------- */
     error Raffle__SendMoreToEnterRaffle();
     error Raffle__TransferFailed();
     error Raffle__RaffleNotOpen();
+    error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
 
-    /* Type declarations */
+    /* ---------- Type declarations ---------- */
     enum RaffleState {
         OPEN,
         CALCULATING
     }
 
-    /* State variables */
+    /* ---------- State variables ---------- */
     // Chainlink VRF Variables
     uint256 private immutable i_subscriptionId;
     bytes32 private immutable i_gasLane;
@@ -39,11 +41,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
     address payable[] private s_players;
     RaffleState private s_raffleState;
 
-    /* Events */
+    /* ---------- Events ---------- */
     event EnteredRaffle(address indexed player);
     event WinnerPicked(address indexed winner);
 
-    /* Functions */
+    /* ---------- Functions ---------- */
     constructor(
         uint256 subscriptionId,
         bytes32 gasLane, // keyHash
@@ -74,9 +76,39 @@ contract Raffle is VRFConsumerBaseV2Plus {
         emit EnteredRaffle(msg.sender);
     }
 
-    function pickWinner() external {
-        if (block.timestamp - s_lastTimeStamp < i_interval) {
-            revert(); // TODO: implement custom error
+    /**
+     * @dev This is the function that the Chainlink Automation nodes call
+     * to see if the raffle is ready to pick a winner (`performUpkeep`).
+     * @dev We can freely add modifiers and change the data location of parameters
+     * as it does not change the core signature of the function.
+     * We can also modify visibly to a broader one.
+     * Even though the function signature is not explicitly virtual,
+     * all functions in an interface are meant to be virtual because they are just signatures.
+     * Thus it is legal here to either use or not use the override.
+     */
+    function checkUpkeep(bytes memory /* checkData */ )
+        public
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory /* performData */ )
+    {
+        bool timePassed = (block.timestamp - s_lastTimeStamp) >= i_interval;
+        bool isOpen = RaffleState.OPEN == s_raffleState;
+        bool hasPlayers = s_players.length > 0;
+        bool hasBalance = address(this).balance > 0;
+        upkeepNeeded = timePassed && isOpen && hasBalance && hasPlayers;
+        return (upkeepNeeded, "");
+    }
+
+    /**
+     * @dev Once `checkUpkeep` is returning `true`, this function is called
+     * and it kicks off a Chainlink VRF call to get a random winner.
+     */
+    function performUpkeep(bytes calldata /* performData */ ) external override {
+        // since it's an external function, anybody can call it, thus we need to perform a check
+        (bool upKeepNeeded,) = checkUpkeep("");
+        if (!upKeepNeeded) {
+            revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
         }
 
         s_raffleState = RaffleState.CALCULATING;
@@ -91,12 +123,12 @@ contract Raffle is VRFConsumerBaseV2Plus {
             extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
         });
 
-        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+        // returns uint256 requestId
+        s_vrfCoordinator.requestRandomWords(request);
     }
 
     /**
-     * @dev This is the function that Chainlink VRF node
-     * calls to send the money to the random winner.
+     * @dev This is the function that Chainlink VRF node calls to send the money to the random winner.
      */
     function fulfillRandomWords(uint256, /* requestId */ uint256[] calldata randomWords) internal override {
         uint256 winnerIdx = randomWords[0] % s_players.length;
@@ -106,7 +138,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
 
-        // @note We could do the state updates after the call to save gas in case the call doesn't succeed
+        // We could do the state updates after the call to save gas in case the call doesn't succeed
         // but that would leave the contract in an inconsistent state for a short time
         // and would break the CEI pattern: Checks -> Effects -> Interactions.
         (bool success,) = recentWinner.call{value: address(this).balance}("");
@@ -116,7 +148,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         emit WinnerPicked(s_recentWinner);
     }
 
-    /* Getter Functions */
+    /* ---------- Getter Functions ---------- */
     function getEntranceFee() public view returns (uint256) {
         return i_entranceFee;
     }
