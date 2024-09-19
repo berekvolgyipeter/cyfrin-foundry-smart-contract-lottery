@@ -66,7 +66,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     }
 
     function enterRaffle() external payable {
-        if (msg.value <= i_entranceFee) {
+        if (msg.value < i_entranceFee) {
             revert Raffle__SendMoreToEnterRaffle();
         }
         if (s_raffleState != RaffleState.OPEN) {
