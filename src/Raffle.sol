@@ -28,7 +28,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     /* ---------- State variables ---------- */
     // Chainlink VRF Variables
     uint256 private immutable i_subscriptionId;
-    bytes32 private immutable i_gasLane;
+    bytes32 private immutable i_keyHash;
     uint32 private immutable i_callbackGasLimit;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
@@ -48,14 +48,14 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     /* ---------- Functions ---------- */
     constructor(
         uint256 subscriptionId,
-        bytes32 gasLane, // keyHash
+        bytes32 keyHash,
         uint32 callbackGasLimit,
         uint256 entranceFee,
         uint256 interval,
         address vrfCoordinatorV2_5
     ) VRFConsumerBaseV2Plus(vrfCoordinatorV2_5) {
         i_subscriptionId = subscriptionId;
-        i_gasLane = gasLane;
+        i_keyHash = keyHash;
         i_callbackGasLimit = callbackGasLimit;
 
         i_entranceFee = entranceFee;
@@ -114,7 +114,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         s_raffleState = RaffleState.CALCULATING;
 
         VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
-            keyHash: i_gasLane,
+            keyHash: i_keyHash,
             subId: i_subscriptionId,
             requestConfirmations: REQUEST_CONFIRMATIONS,
             callbackGasLimit: i_callbackGasLimit,

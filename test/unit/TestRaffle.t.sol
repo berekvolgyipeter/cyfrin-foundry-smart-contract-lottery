@@ -14,10 +14,10 @@ contract TestRaffle is Test {
     uint256 public constant STARTING_PLAYER_BALANCE = 10 ether;
 
     uint256 subscriptionId;
-    bytes32 gasLane;
+    bytes32 keyHash;
     uint32 callbackGasLimit;
-    uint256 raffleEntranceFee;
-    uint256 automationUpdateInterval;
+    uint256 entranceFee;
+    uint256 interval;
     address vrfCoordinatorV2_5;
 
     function setUp() external {
@@ -26,10 +26,10 @@ contract TestRaffle is Test {
 
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
         subscriptionId = config.subscriptionId;
-        gasLane = config.gasLane;
+        keyHash = config.keyHash;
         callbackGasLimit = config.callbackGasLimit;
-        raffleEntranceFee = config.raffleEntranceFee;
-        automationUpdateInterval = config.automationUpdateInterval;
+        entranceFee = config.entranceFee;
+        interval = config.interval;
         vrfCoordinatorV2_5 = config.vrfCoordinatorV2_5;
     }
 
