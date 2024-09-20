@@ -2,7 +2,7 @@
 
 .PHONY: all test clean deploy fund help install snapshot format anvil 
 
-ANVIL_PRIVATE_KEY_0 := 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+PRIVATE_KEY_ANVIL_0 := 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 
 help:
 	@echo "Usage:"
@@ -30,14 +30,14 @@ format :; forge fmt
 
 anvil :; anvil -m 'test test test test test test test test test test test junk' --steps-tracing --block-time 1
 
-ANVIL_NETWORK_ARGS := --rpc-url http://localhost:8545 --private-key $(ANVIL_PRIVATE_KEY_0) --broadcast
+NETWORK_ARGS_ANVIL := --rpc-url http://localhost:8545 --private-key $(PRIVATE_KEY_ANVIL_0) --broadcast
 
-SEPOLIA_NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --account $(ACCOUNT) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+NETWORK_ARGS_SEPOLIA := --rpc-url $(SEPOLIA_RPC_URL) --account $(ACCOUNT_DEV) --broadcast -vvvv
 
 ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
-	NETWORK_ARGS := $(SEPOLIA_NETWORK_ARGS)
+	NETWORK_ARGS := $(NETWORK_ARGS_SEPOLIA)
 else
-	NETWORK_ARGS := $(ANVIL_NETWORK_ARGS)
+	NETWORK_ARGS := $(NETWORK_ARGS_ANVIL)
 endif
 
 deploy:
