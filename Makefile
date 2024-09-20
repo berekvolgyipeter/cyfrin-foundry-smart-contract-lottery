@@ -32,7 +32,7 @@ anvil :; anvil -m 'test test test test test test test test test test test junk' 
 
 NETWORK_ARGS_ANVIL := --rpc-url http://localhost:8545 --private-key $(PRIVATE_KEY_ANVIL_0) --broadcast
 
-NETWORK_ARGS_SEPOLIA := --rpc-url $(SEPOLIA_RPC_URL) --account $(ACCOUNT_DEV) --broadcast -vvvv
+NETWORK_ARGS_SEPOLIA := --rpc-url $(RPC_URL_SEPOLIA) --account $(ACCOUNT_DEV) --broadcast -vvvv
 
 ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 	NETWORK_ARGS := $(NETWORK_ARGS_SEPOLIA)
