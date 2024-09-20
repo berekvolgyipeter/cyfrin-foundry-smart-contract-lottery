@@ -64,4 +64,16 @@ contract TestRaffle is Test {
         emit EnteredRaffle(PLAYER);
         raffle.enterRaffle{value: entranceFee}();
     }
+
+    function testPlayersAreNotAllowedToEnterWhileStateIsCalculating() public {
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.warp(block.timestamp + interval + 1); // cheat code to modify block timestamp
+        vm.roll(block.number + 1); // cheat code to modify block number
+        raffle.performUpkeep("");
+        assert(raffle.getRaffleState() == Raffle.RaffleState.CALCULATING);
+
+        vm.expectRevert(Raffle.Raffle__RaffleNotOpen.selector);
+        raffle.enterRaffle{value: entranceFee}();
+    }
 }
