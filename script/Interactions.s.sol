@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {Script, console2} from "forge-std/Script.sol";
+import {DevOpsTools} from "foundry-devops/DevOpsTools.sol";
 import {VRFCoordinatorV2_5Mock} from "chainlink/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 import {CodeConstants, HelperConfig} from "script/HelperConfig.s.sol";
 import {LinkToken} from "test/mocks/LinkToken.sol";
@@ -73,5 +74,29 @@ contract FundSubscription is CodeConstants, Script {
 
     function run() external {
         fundSubscriptionUsingConfig();
+    }
+}
+
+contract AddConsumer is Script {
+    function addConsumer(address contractToAddToVrf, address vrfCoordinator, uint256 subId) public {
+        console2.log("Adding consumer contract:", contractToAddToVrf);
+        console2.log("Using vrfCoordinator:", vrfCoordinator);
+        console2.log("On ChainID:", block.chainid);
+
+        vm.startBroadcast();
+        VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(subId, contractToAddToVrf);
+        vm.stopBroadcast();
+    }
+
+    function addConsumerUsingConfig(address contractToAddToVrf) public {
+        HelperConfig helperConfig = new HelperConfig();
+        HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
+
+        addConsumer(contractToAddToVrf, config.vrfCoordinatorV2_5, config.subscriptionId);
+    }
+
+    function run() external {
+        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("Raffle", block.chainid);
+        addConsumerUsingConfig(mostRecentlyDeployed);
     }
 }

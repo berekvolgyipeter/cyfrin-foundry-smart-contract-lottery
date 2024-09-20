@@ -32,7 +32,6 @@ contract HelperConfig is CodeConstants, Script {
         address vrfCoordinatorV2_5;
         address linkToken;
     }
-    // address account;
 
     /* ---------- State variables ---------- */
     NetworkConfig public localNetworkConfig;
@@ -74,7 +73,6 @@ contract HelperConfig is CodeConstants, Script {
             vrfCoordinatorV2_5: 0x271682DEB8C4E0901D1a1550aD2e64D568E69909,
             linkToken: 0x514910771AF9Ca656af840dff83E8264EcF986CA
         });
-        // account: 0x643315C9Be056cDEA171F4e7b2222a4ddaB9F88D
     }
 
     function getSepoliaEthConfig() public pure returns (NetworkConfig memory sepoliaNetworkConfig) {
@@ -88,7 +86,6 @@ contract HelperConfig is CodeConstants, Script {
             vrfCoordinatorV2_5: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
             linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789
         });
-        // account: 0x643315C9Be056cDEA171F4e7b2222a4ddaB9F88D
     }
 
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
@@ -116,9 +113,7 @@ contract HelperConfig is CodeConstants, Script {
             vrfCoordinatorV2_5: address(vrfCoordinatorV2_5Mock),
             linkToken: address(linkToken)
         });
-        // account: FOUNDRY_DEFAULT_SENDER
 
-        // vm.deal(localNetworkConfig.account, 100 ether);
         return localNetworkConfig;
     }
 }
