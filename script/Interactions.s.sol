@@ -11,7 +11,8 @@ contract CreateSubscription is Script {
         console2.log("Creating subscription on chainId: ", block.chainid);
 
         vm.startBroadcast();
-        // TODO: why are we using mock here?
+        // VRFCoordinatorV2_5Mock inherits from createSubscription SubscriptionAPI
+        // so it can create subscription on any network
         uint256 subId = VRFCoordinatorV2_5Mock(vrfCoordinatorV2_5).createSubscription();
         vm.stopBroadcast();
 
@@ -44,10 +45,12 @@ contract FundSubscription is CodeConstants, Script {
 
         if (block.chainid == LOCAL_CHAIN_ID) {
             vm.startBroadcast();
+            // fundSubscription is written for local network
             VRFCoordinatorV2_5Mock(vrfCoordinatorV2_5).fundSubscription(subId, FUND_AMOUNT);
             vm.stopBroadcast();
         } else {
             vm.startBroadcast();
+            // LinkToken inherits from ERC20 so it can be used to make transers in real networks
             LinkToken(linkToken).transferAndCall(vrfCoordinatorV2_5, FUND_AMOUNT, abi.encode(subId));
             vm.stopBroadcast();
         }
