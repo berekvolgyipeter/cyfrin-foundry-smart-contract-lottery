@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console2} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {VRFCoordinatorV2_5Mock} from "chainlink/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 import {DeployRaffle} from "script/DeployRaffle.s.sol";
@@ -151,5 +151,43 @@ contract TestFulfillRandomWords is TestRaffle {
     function testCanOnlyBeCalledAfterPerformUpkeep(uint256 requestId) public enteredRaffle intervalPassed {
         vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
         VRFCoordinatorV2_5Mock(cfg.vrfCoordinator).fulfillRandomWords(requestId, address(raffle));
+    }
+
+    function testPicksAWinnerResetsAndSendsMoney() public enteredRaffle intervalPassed {
+        address expectedWinner = address(1);
+
+        // Arrange
+        uint256 additionalEntrances = 3;
+        uint160 startingIndex = 1; // We have starting index be 1 so we can start with address(1) and not address(0)
+
+        for (uint160 i = startingIndex; i < startingIndex + additionalEntrances; i++) {
+            address player = address(i);
+            hoax(player, 1 ether); // sets up a prank and a deal
+            raffle.enterRaffle{value: cfg.entranceFee}();
+        }
+
+        uint256 startingTimeStamp = raffle.getLastTimeStamp();
+        uint256 startingBalance = expectedWinner.balance;
+
+        // Act
+        vm.recordLogs();
+        raffle.performUpkeep(""); // emits requestId
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        console2.logBytes32(entries[1].topics[1]);
+        bytes32 requestId = entries[1].topics[1]; // get the requestId from the logs
+
+        VRFCoordinatorV2_5Mock(cfg.vrfCoordinator).fulfillRandomWords(uint256(requestId), address(raffle));
+
+        // Assert
+        address recentWinner = raffle.getRecentWinner();
+        Raffle.RaffleState raffleState = raffle.getRaffleState();
+        uint256 winnerBalance = recentWinner.balance;
+        uint256 endingTimeStamp = raffle.getLastTimeStamp();
+        uint256 prize = cfg.entranceFee * (additionalEntrances + 1);
+
+        assert(recentWinner == expectedWinner);
+        assert(raffleState == Raffle.RaffleState.OPEN);
+        assert(winnerBalance == startingBalance + prize);
+        assert(endingTimeStamp > startingTimeStamp);
     }
 }
