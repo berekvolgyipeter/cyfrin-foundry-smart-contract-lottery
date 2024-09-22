@@ -13,12 +13,7 @@ contract TestRaffle is Test {
     address public PLAYER = makeAddr("player");
     uint256 public constant STARTING_PLAYER_BALANCE = 10 ether;
 
-    uint256 subscriptionId;
-    bytes32 keyHash;
-    uint32 callbackGasLimit;
-    uint256 entranceFee;
-    uint256 interval;
-    address vrfCoordinatorV2_5;
+    HelperConfig.NetworkConfig cfg;
 
     event EnteredRaffle(address indexed player);
     event WinnerPicked(address indexed winner);
@@ -27,13 +22,7 @@ contract TestRaffle is Test {
         DeployRaffle deployer = new DeployRaffle();
         (raffle, helperConfig) = deployer.run();
 
-        HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
-        subscriptionId = config.subscriptionId;
-        keyHash = config.keyHash;
-        callbackGasLimit = config.callbackGasLimit;
-        entranceFee = config.entranceFee;
-        interval = config.interval;
-        vrfCoordinatorV2_5 = config.vrfCoordinatorV2_5;
+        cfg = helperConfig.getConfig();
 
         vm.deal(PLAYER, STARTING_PLAYER_BALANCE);
     }
@@ -52,7 +41,7 @@ contract TestRaffle is Test {
 
     function testRaffleRecordsPlayersWhenTheyEnter() public {
         vm.prank(PLAYER);
-        raffle.enterRaffle{value: entranceFee}();
+        raffle.enterRaffle{value: cfg.entranceFee}();
 
         assert(raffle.getNumberOfPlayers() == 1);
         assert(raffle.getPlayer(0) == PLAYER);
@@ -62,18 +51,18 @@ contract TestRaffle is Test {
         vm.prank(PLAYER);
         vm.expectEmit(true, false, false, false, address(raffle));
         emit EnteredRaffle(PLAYER);
-        raffle.enterRaffle{value: entranceFee}();
+        raffle.enterRaffle{value: cfg.entranceFee}();
     }
 
     function testPlayersAreNotAllowedToEnterWhileStateIsCalculating() public {
         vm.prank(PLAYER);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + interval + 1); // cheat code to modify block timestamp
+        raffle.enterRaffle{value: cfg.entranceFee}();
+        vm.warp(block.timestamp + cfg.interval + 1); // cheat code to modify block timestamp
         vm.roll(block.number + 1); // cheat code to modify block number
         raffle.performUpkeep("");
         assert(raffle.getRaffleState() == Raffle.RaffleState.CALCULATING);
 
         vm.expectRevert(Raffle.Raffle__RaffleNotOpen.selector);
-        raffle.enterRaffle{value: entranceFee}();
+        raffle.enterRaffle{value: cfg.entranceFee}();
     }
 }

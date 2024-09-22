@@ -10,31 +10,26 @@ contract DeployRaffle is Script {
     function run() external returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         AddConsumer addConsumer = new AddConsumer();
-        HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
+        HelperConfig.NetworkConfig memory cfg = helperConfig.getConfig();
 
-        if (config.subscriptionId == 0) {
+        if (cfg.subscriptionId == 0) {
             CreateSubscription createSubscription = new CreateSubscription();
-            config.subscriptionId = createSubscription.createSubscription(config.vrfCoordinatorV2_5);
+            cfg.subscriptionId = createSubscription.createSubscription(cfg.vrfCoordinator);
 
             FundSubscription fundSubscription = new FundSubscription();
-            fundSubscription.fundSubscription(config.subscriptionId, config.vrfCoordinatorV2_5, config.linkToken);
+            fundSubscription.fundSubscription(cfg.subscriptionId, cfg.vrfCoordinator, cfg.linkToken);
 
-            helperConfig.setConfig(block.chainid, config);
+            helperConfig.setConfig(block.chainid, cfg);
         }
 
         vm.startBroadcast();
         Raffle raffle = new Raffle(
-            config.subscriptionId,
-            config.keyHash,
-            config.callbackGasLimit,
-            config.entranceFee,
-            config.interval,
-            config.vrfCoordinatorV2_5
+            cfg.subscriptionId, cfg.keyHash, cfg.callbackGasLimit, cfg.entranceFee, cfg.interval, cfg.vrfCoordinator
         );
         vm.stopBroadcast();
 
         // broadcasting is done in addConsumer
-        addConsumer.addConsumer(address(raffle), config.vrfCoordinatorV2_5, config.subscriptionId);
+        addConsumer.addConsumer(address(raffle), cfg.vrfCoordinator, cfg.subscriptionId);
         return (raffle, helperConfig);
     }
 }

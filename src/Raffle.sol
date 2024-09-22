@@ -52,8 +52,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         uint32 callbackGasLimit,
         uint256 entranceFee,
         uint256 interval,
-        address vrfCoordinatorV2_5
-    ) VRFConsumerBaseV2Plus(vrfCoordinatorV2_5) {
+        address vrfCoordinator
+    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
         i_subscriptionId = subscriptionId;
         i_keyHash = keyHash;
         i_callbackGasLimit = callbackGasLimit;

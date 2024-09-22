@@ -29,7 +29,7 @@ contract HelperConfig is CodeConstants, Script {
         uint32 callbackGasLimit;
         uint256 entranceFee;
         uint256 interval;
-        address vrfCoordinatorV2_5;
+        address vrfCoordinator;
         address linkToken;
     }
 
@@ -53,7 +53,7 @@ contract HelperConfig is CodeConstants, Script {
     }
 
     function getConfigByChainId(uint256 chainId) public returns (NetworkConfig memory) {
-        if (networkConfigs[chainId].vrfCoordinatorV2_5 != address(0)) {
+        if (networkConfigs[chainId].vrfCoordinator != address(0)) {
             return networkConfigs[chainId];
         } else if (chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilEthConfig();
@@ -70,7 +70,7 @@ contract HelperConfig is CodeConstants, Script {
             callbackGasLimit: 500_000,
             entranceFee: 0.01 ether,
             interval: 30,
-            vrfCoordinatorV2_5: 0x271682DEB8C4E0901D1a1550aD2e64D568E69909,
+            vrfCoordinator: 0x271682DEB8C4E0901D1a1550aD2e64D568E69909,
             linkToken: 0x514910771AF9Ca656af840dff83E8264EcF986CA
         });
     }
@@ -83,14 +83,14 @@ contract HelperConfig is CodeConstants, Script {
             callbackGasLimit: 500_000,
             entranceFee: 0.01 ether,
             interval: 30,
-            vrfCoordinatorV2_5: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
+            vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
             linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789
         });
     }
 
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
         // Check to see if we set an active network config
-        if (localNetworkConfig.vrfCoordinatorV2_5 != address(0)) {
+        if (localNetworkConfig.vrfCoordinator != address(0)) {
             return localNetworkConfig;
         }
 
@@ -110,7 +110,7 @@ contract HelperConfig is CodeConstants, Script {
             callbackGasLimit: 500_000,
             entranceFee: 0.01 ether,
             interval: 30,
-            vrfCoordinatorV2_5: address(vrfCoordinatorV2_5Mock),
+            vrfCoordinator: address(vrfCoordinatorV2_5Mock),
             linkToken: address(linkToken)
         });
 
