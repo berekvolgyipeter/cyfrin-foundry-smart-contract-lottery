@@ -6,9 +6,9 @@ PRIVATE_KEY_ANVIL_0 := 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7
 
 help:
 	@echo "Usage:"
-	@echo "  make deploy [ARGS=...]\n    example: make deploy ARGS=\"--network sepolia\""
+	@echo "  make deploy [ARGS=...]\n    example: make deploy ARGS=\"--sepolia\""
 	@echo ""
-	@echo "  make fund [ARGS=...]\n    example: make deploy ARGS=\"--network sepolia\""
+	@echo "  make fund [ARGS=...]\n    example: make deploy ARGS=\"--sepolia\""
 
 all: clean remove install update build
 
@@ -32,9 +32,9 @@ anvil :; anvil -m 'test test test test test test test test test test test junk' 
 
 NETWORK_ARGS_ANVIL := --rpc-url http://localhost:8545 --private-key $(PRIVATE_KEY_ANVIL_0) --broadcast
 
-NETWORK_ARGS_SEPOLIA := --rpc-url $(RPC_URL_SEPOLIA) --account $(ACCOUNT_DEV) --broadcast -vvvv
+NETWORK_ARGS_SEPOLIA := --rpc-url $(RPC_URL_SEPOLIA) --account $(ACCOUNT_DEV) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 
-ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
+ifeq ($(findstring --sepolia,$(ARGS)),--sepolia)
 	NETWORK_ARGS := $(NETWORK_ARGS_SEPOLIA)
 else
 	NETWORK_ARGS := $(NETWORK_ARGS_ANVIL)
