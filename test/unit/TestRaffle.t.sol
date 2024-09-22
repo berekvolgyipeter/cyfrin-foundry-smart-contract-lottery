@@ -7,7 +7,7 @@ import {DeployRaffle} from "script/DeployRaffle.s.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 import {Raffle} from "src/Raffle.sol";
 
-contract TestRaffle is Test {
+abstract contract TestRaffle is Test {
     Raffle public raffle;
     HelperConfig public helperConfig;
 
@@ -39,12 +39,15 @@ contract TestRaffle is Test {
         vm.roll(block.number + 1); // cheat code to modify block number
         _;
     }
+}
 
+contract TestRaffleInit is TestRaffle {
     function testRaffleInitialStateIsOpen() public view {
         assert(raffle.getRaffleState() == Raffle.RaffleState.OPEN);
     }
+}
 
-    /* ---------- enterRaffle() ---------- */
+contract TestEnterRaffle is TestRaffle {
     function testRaffleRevertsWhenYouDontPayEnough() public {
         vm.prank(PLAYER);
         vm.expectRevert(Raffle.Raffle__SendMoreToEnterRaffle.selector);
@@ -70,15 +73,16 @@ contract TestRaffle is Test {
         vm.expectRevert(Raffle.Raffle__RaffleNotOpen.selector);
         raffle.enterRaffle{value: cfg.entranceFee}();
     }
+}
 
-    /* ---------- checkUpkeep() ---------- */
-    function testCheckUpkeepReturnsFalseIfItHasNoBalance() public intervalPassed {
+contract TestCheckUpKeep is TestRaffle {
+    function testReturnsFalseIfItHasNoBalance() public intervalPassed {
         (bool upkeepNeeded,) = raffle.checkUpkeep("");
 
         assert(!upkeepNeeded);
     }
 
-    function testCheckUpkeepReturnsFalseIfRaffleIsntOpen() public enteredRaffle intervalPassed {
+    function testReturnsFalseIfRaffleIsntOpen() public enteredRaffle intervalPassed {
         raffle.performUpkeep("");
         assert(raffle.getRaffleState() == Raffle.RaffleState.CALCULATING);
 
@@ -88,7 +92,7 @@ contract TestRaffle is Test {
         assert(!upkeepNeeded);
     }
 
-    function testCheckUpkeepReturnsFalseIfEnoughTimeHasntPassed() public {
+    function testReturnsFalseIfEnoughTimeHasntPassed() public {
         vm.prank(PLAYER);
         raffle.enterRaffle{value: cfg.entranceFee}();
 
@@ -97,18 +101,19 @@ contract TestRaffle is Test {
         assert(!upkeepNeeded);
     }
 
-    function testCheckUpkeepReturnsTrueWhenParametersGood() public enteredRaffle intervalPassed {
+    function testReturnsTrueWhenParametersGood() public enteredRaffle intervalPassed {
         (bool upkeepNeeded,) = raffle.checkUpkeep("");
 
         assert(upkeepNeeded);
     }
+}
 
-    /* ---------- performUpkeep() ---------- */
-    function testPerformUpkeepCanOnlyRunIfCheckUpkeepIsTrue() public enteredRaffle intervalPassed {
+contract TestPerformUpKeep is TestRaffle {
+    function testCanOnlyRunIfCheckUpkeepIsTrue() public enteredRaffle intervalPassed {
         raffle.performUpkeep("");
     }
 
-    function testPerformUpkeepRevertsIfCheckUpkeepIsFalse() public {
+    function testRevertsIfCheckUpkeepIsFalse() public {
         uint256 currentBalance = 0;
         uint256 numPlayers = 0;
         Raffle.RaffleState rState = raffle.getRaffleState();
@@ -129,7 +134,7 @@ contract TestRaffle is Test {
         raffle.performUpkeep("");
     }
 
-    function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() public enteredRaffle intervalPassed {
+    function testUpdatesRaffleStateAndEmitsRequestId() public enteredRaffle intervalPassed {
         vm.recordLogs();
         raffle.performUpkeep(""); // emits requestId
         Vm.Log[] memory entries = vm.getRecordedLogs(); // gets emitted events
