@@ -27,6 +27,18 @@ contract TestRaffle is Test {
         vm.deal(PLAYER, STARTING_PLAYER_BALANCE);
     }
 
+    modifier enteredRaffle() {
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: cfg.entranceFee}();
+        _;
+    }
+
+    modifier intervalPassed() {
+        vm.warp(block.timestamp + cfg.interval + 1); // cheat code to modify block timestamp
+        vm.roll(block.number + 1); // cheat code to modify block number
+        _;
+    }
+
     function testRaffleInitialStateIsOpen() public view {
         assert(raffle.getRaffleState() == Raffle.RaffleState.OPEN);
     }
@@ -39,10 +51,7 @@ contract TestRaffle is Test {
         raffle.enterRaffle{value: 0 ether}();
     }
 
-    function testRaffleRecordsPlayersWhenTheyEnter() public {
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: cfg.entranceFee}();
-
+    function testRaffleRecordsPlayersWhenTheyEnter() public enteredRaffle {
         assert(raffle.getNumberOfPlayers() == 1);
         assert(raffle.getPlayer(0) == PLAYER);
     }
@@ -54,11 +63,7 @@ contract TestRaffle is Test {
         raffle.enterRaffle{value: cfg.entranceFee}();
     }
 
-    function testPlayersAreNotAllowedToEnterWhileStateIsCalculating() public {
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: cfg.entranceFee}();
-        vm.warp(block.timestamp + cfg.interval + 1); // cheat code to modify block timestamp
-        vm.roll(block.number + 1); // cheat code to modify block number
+    function testPlayersAreNotAllowedToEnterWhileStateIsCalculating() public enteredRaffle intervalPassed {
         raffle.performUpkeep("");
         assert(raffle.getRaffleState() == Raffle.RaffleState.CALCULATING);
 
@@ -67,20 +72,13 @@ contract TestRaffle is Test {
     }
 
     /* ---------- checkUpkeep() ---------- */
-    function testCheckUpkeepReturnsFalseIfItHasNoBalance() public {
-        vm.warp(block.timestamp + cfg.interval + 1);
-        vm.roll(block.number + 1);
-
+    function testCheckUpkeepReturnsFalseIfItHasNoBalance() public intervalPassed {
         (bool upkeepNeeded,) = raffle.checkUpkeep("");
 
         assert(!upkeepNeeded);
     }
 
-    function testCheckUpkeepReturnsFalseIfRaffleIsntOpen() public {
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: cfg.entranceFee}();
-        vm.warp(block.timestamp + cfg.interval + 1);
-        vm.roll(block.number + 1);
+    function testCheckUpkeepReturnsFalseIfRaffleIsntOpen() public enteredRaffle intervalPassed {
         raffle.performUpkeep("");
         assert(raffle.getRaffleState() == Raffle.RaffleState.CALCULATING);
 
@@ -99,24 +97,14 @@ contract TestRaffle is Test {
         assert(!upkeepNeeded);
     }
 
-    function testCheckUpkeepReturnsTrueWhenParametersGood() public {
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: cfg.entranceFee}();
-
-        vm.warp(block.timestamp + cfg.interval + 1);
-        vm.roll(block.number + 1);
+    function testCheckUpkeepReturnsTrueWhenParametersGood() public enteredRaffle intervalPassed {
         (bool upkeepNeeded,) = raffle.checkUpkeep("");
 
         assert(upkeepNeeded);
     }
 
     /* ---------- performUpkeep() ---------- */
-    function testPerformUpkeepCanOnlyRunIfCheckUpkeepIsTrue() public {
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: cfg.entranceFee}();
-        vm.warp(block.timestamp + cfg.interval + 1);
-        vm.roll(block.number + 1);
-
+    function testPerformUpkeepCanOnlyRunIfCheckUpkeepIsTrue() public enteredRaffle intervalPassed {
         raffle.performUpkeep("");
     }
 
