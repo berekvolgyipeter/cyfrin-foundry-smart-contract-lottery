@@ -43,6 +43,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     /* ---------- Events ---------- */
     event EnteredRaffle(address indexed player);
+    event RequestedRaffleWinner(uint256 indexed requestId);
     event WinnerPicked(address indexed winner);
 
     /* ---------- Functions ---------- */
@@ -123,8 +124,12 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
             extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
         });
 
-        // returns uint256 requestId
-        s_vrfCoordinator.requestRandomWords(request);
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+
+        // This is a redundant emit, since VRFCoordinatorV2_5Mock.requestRandomWords already emits
+        // requestRandomWords which contains the requestId.
+        // note: It's only implemented for education purpuses in the tests
+        emit RequestedRaffleWinner(requestId);
     }
 
     /**

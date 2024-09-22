@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {Test} from "forge-std/Test.sol";
+import {Vm} from "forge-std/Vm.sol";
 import {DeployRaffle} from "script/DeployRaffle.s.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 import {Raffle} from "src/Raffle.sol";
@@ -44,7 +45,6 @@ contract TestRaffle is Test {
     }
 
     /* ---------- enterRaffle() ---------- */
-
     function testRaffleRevertsWhenYouDontPayEnough() public {
         vm.prank(PLAYER);
         vm.expectRevert(Raffle.Raffle__SendMoreToEnterRaffle.selector);
@@ -127,5 +127,16 @@ contract TestRaffle is Test {
             abi.encodeWithSelector(Raffle.Raffle__UpkeepNotNeeded.selector, currentBalance, numPlayers, rState)
         );
         raffle.performUpkeep("");
+    }
+
+    function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() public enteredRaffle intervalPassed {
+        vm.recordLogs();
+        raffle.performUpkeep(""); // emits requestId
+        Vm.Log[] memory entries = vm.getRecordedLogs(); // gets emitted events
+        bytes32 requestId = entries[1].topics[1];
+
+        Raffle.RaffleState raffleState = raffle.getRaffleState();
+        assert(uint256(requestId) > 0);
+        assert(raffleState == Raffle.RaffleState.CALCULATING);
     }
 }
