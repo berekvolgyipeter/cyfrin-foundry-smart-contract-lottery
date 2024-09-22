@@ -24,6 +24,12 @@ build:; forge build
 
 test :; forge test -vvv
 
+coverage :; forge coverage -vvv
+
+coverageLcov :; forge coverage --report lcov
+
+coverageTxt :; forge coverage --report debug > coverage.txt
+
 snapshot :; forge snapshot
 
 format :; forge fmt
