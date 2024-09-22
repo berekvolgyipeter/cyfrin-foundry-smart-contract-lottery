@@ -7,9 +7,10 @@ import {LinkToken} from "test/mocks/LinkToken.sol";
 
 abstract contract CodeConstants {
     // VRF mock values
-    uint96 public MOCK_BASE_FEE = 0.25 ether;
+    uint96 public MOCK_BASE_FEE = 0.0025 ether;
     uint96 public MOCK_GAS_PRICE_LINK = 1e9;
     int256 public MOCK_WEI_PER_UNIT_LINK = 4e15;
+    uint256 public MOCK_FUND_AMOUNT = 100 ether;
 
     address public FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
 
@@ -102,10 +103,11 @@ contract HelperConfig is CodeConstants, Script {
             new VRFCoordinatorV2_5Mock(MOCK_BASE_FEE, MOCK_GAS_PRICE_LINK, MOCK_WEI_PER_UNIT_LINK);
         LinkToken linkToken = new LinkToken();
         uint256 subscriptionId = vrfCoordinatorV2_5Mock.createSubscription();
+        VRFCoordinatorV2_5Mock(vrfCoordinatorV2_5Mock).fundSubscription(subscriptionId, MOCK_FUND_AMOUNT);
         vm.stopBroadcast();
 
         localNetworkConfig = NetworkConfig({
-            subscriptionId: subscriptionId,
+            subscriptionId: subscriptionId, // If left as 0, our scripts will create one!
             keyHash: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c, // doesn't really matter
             callbackGasLimit: 500_000,
             entranceFee: 0.01 ether,

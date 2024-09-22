@@ -39,22 +39,29 @@ contract FundSubscription is CodeConstants, Script {
     uint96 public constant FUND_AMOUNT = 3 ether; // 3 LINK
 
     function fundSubscription(uint256 subId, address vrfCoordinator, address linkToken) public {
+        uint256 fundAmount;
+
         console2.log("Funding subscription:", subId);
-        console2.log("Fund amount in LINK WEI:", FUND_AMOUNT);
         console2.log("Using vrfCoordinator:", vrfCoordinator);
         console2.log("On ChainID:", block.chainid);
 
         if (block.chainid == LOCAL_CHAIN_ID) {
+            fundAmount = MOCK_FUND_AMOUNT;
+
             vm.startBroadcast();
             // fundSubscription is written for local network
-            VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(subId, FUND_AMOUNT);
+            VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(subId, fundAmount);
             vm.stopBroadcast();
         } else {
+            fundAmount = FUND_AMOUNT;
+
             vm.startBroadcast();
             // LinkToken inherits from ERC20 so it can be used to make transers in real networks
-            LinkToken(linkToken).transferAndCall(vrfCoordinator, FUND_AMOUNT, abi.encode(subId));
+            LinkToken(linkToken).transferAndCall(vrfCoordinator, fundAmount, abi.encode(subId));
             vm.stopBroadcast();
         }
+
+        console2.log("Fund amount in LINK WEI:", fundAmount);
     }
 
     function fundSubscriptionUsingConfig() public {
