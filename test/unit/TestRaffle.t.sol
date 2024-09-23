@@ -5,7 +5,7 @@ import {Test, console2} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {VRFCoordinatorV2_5Mock} from "chainlink/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 import {DeployRaffle} from "script/DeployRaffle.s.sol";
-import {HelperConfig} from "script/HelperConfig.s.sol";
+import {CodeConstants, HelperConfig} from "script/HelperConfig.s.sol";
 import {Raffle} from "src/Raffle.sol";
 
 abstract contract TestRaffle is Test {
@@ -147,13 +147,21 @@ contract TestPerformUpKeep is TestRaffle {
     }
 }
 
-contract TestFulfillRandomWords is TestRaffle {
-    function testCanOnlyBeCalledAfterPerformUpkeep(uint256 requestId) public enteredRaffle intervalPassed {
+contract TestFulfillRandomWords is TestRaffle, CodeConstants {
+    modifier skipFork() {
+        // in fork tests the VRF contracts can only be called by chainlink nodes
+        if (block.chainid != LOCAL_CHAIN_ID) {
+            vm.skip(true);
+        }
+        _;
+    }
+
+    function testCanOnlyBeCalledAfterPerformUpkeep(uint256 requestId) public enteredRaffle intervalPassed skipFork {
         vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
         VRFCoordinatorV2_5Mock(cfg.vrfCoordinator).fulfillRandomWords(requestId, address(raffle));
     }
 
-    function testPicksAWinnerResetsAndSendsMoney() public enteredRaffle intervalPassed {
+    function testPicksAWinnerResetsAndSendsMoney() public enteredRaffle intervalPassed skipFork {
         address expectedWinner = address(1);
 
         // Arrange

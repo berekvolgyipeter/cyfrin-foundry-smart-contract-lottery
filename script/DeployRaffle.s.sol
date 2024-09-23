@@ -14,22 +14,22 @@ contract DeployRaffle is Script {
 
         if (cfg.subscriptionId == 0) {
             CreateSubscription createSubscription = new CreateSubscription();
-            cfg.subscriptionId = createSubscription.createSubscription(cfg.vrfCoordinator);
+            cfg.subscriptionId = createSubscription.createSubscription(cfg.vrfCoordinator, cfg.account);
 
             FundSubscription fundSubscription = new FundSubscription();
-            fundSubscription.fundSubscription(cfg.subscriptionId, cfg.vrfCoordinator, cfg.linkToken);
+            fundSubscription.fundSubscription(cfg.subscriptionId, cfg.vrfCoordinator, cfg.linkToken, cfg.account);
 
             helperConfig.setConfig(block.chainid, cfg);
         }
 
-        vm.startBroadcast();
+        vm.startBroadcast(cfg.account);
         Raffle raffle = new Raffle(
             cfg.subscriptionId, cfg.keyHash, cfg.callbackGasLimit, cfg.entranceFee, cfg.interval, cfg.vrfCoordinator
         );
         vm.stopBroadcast();
 
         // broadcasting is done in addConsumer
-        addConsumer.addConsumer(address(raffle), cfg.vrfCoordinator, cfg.subscriptionId);
+        addConsumer.addConsumer(address(raffle), cfg.vrfCoordinator, cfg.subscriptionId, cfg.account);
         return (raffle, helperConfig);
     }
 }

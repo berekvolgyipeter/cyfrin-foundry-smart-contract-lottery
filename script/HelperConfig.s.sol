@@ -7,12 +7,12 @@ import {LinkToken} from "test/mocks/LinkToken.sol";
 
 abstract contract CodeConstants {
     // VRF mock values
-    uint96 public MOCK_BASE_FEE = 0.0025 ether;
-    uint96 public MOCK_GAS_PRICE_LINK = 1e9;
-    int256 public MOCK_WEI_PER_UNIT_LINK = 4e15;
-    uint256 public MOCK_FUND_AMOUNT = 100 ether;
+    uint96 public constant MOCK_BASE_FEE = 0.0025 ether;
+    uint96 public constant MOCK_GAS_PRICE_LINK = 1e9;
+    int256 public constant MOCK_WEI_PER_UNIT_LINK = 4e15;
+    uint256 public constant MOCK_FUND_AMOUNT = 100 ether;
 
-    address public FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
+    address public constant FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
 
     uint256 public constant ETH_SEPOLIA_CHAIN_ID = 11155111;
     uint256 public constant ETH_MAINNET_CHAIN_ID = 1;
@@ -32,6 +32,7 @@ contract HelperConfig is CodeConstants, Script {
         uint256 interval;
         address vrfCoordinator;
         address linkToken;
+        address account;
     }
 
     /* ---------- State variables ---------- */
@@ -63,29 +64,31 @@ contract HelperConfig is CodeConstants, Script {
         }
     }
 
-    function getMainnetEthConfig() public pure returns (NetworkConfig memory mainnetNetworkConfig) {
+    function getMainnetEthConfig() public view returns (NetworkConfig memory mainnetNetworkConfig) {
         // https://docs.chain.link/vrf/v2-5/supported-networks#ethereum-mainnet
         mainnetNetworkConfig = NetworkConfig({
-            subscriptionId: 0, // If left as 0, our scripts will create one!
+            subscriptionId: vm.envUint("SUBSCRIPTION_ID_MAINNET"), // If left as 0, our scripts will create one!
             keyHash: 0x9fe0eebf5e446e3c998ec9bb19951541aee00bb90ea201ae456421a2ded86805,
             callbackGasLimit: 500_000,
             entranceFee: 0.01 ether,
             interval: 30,
             vrfCoordinator: 0x271682DEB8C4E0901D1a1550aD2e64D568E69909,
-            linkToken: 0x514910771AF9Ca656af840dff83E8264EcF986CA
+            linkToken: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
+            account: vm.envAddress("PUBLIC_KEY_DEPLOYER_ACCOUNT")
         });
     }
 
-    function getSepoliaEthConfig() public pure returns (NetworkConfig memory sepoliaNetworkConfig) {
+    function getSepoliaEthConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig) {
         // https://docs.chain.link/vrf/v2-5/supported-networks#sepolia-testnet
         sepoliaNetworkConfig = NetworkConfig({
-            subscriptionId: 0, // If left as 0, our scripts will create one!
+            subscriptionId: vm.envUint("SUBSCRIPTION_ID_SEPOLIA"), // If left as 0, our scripts will create one!
             keyHash: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
             callbackGasLimit: 500_000,
             entranceFee: 0.01 ether,
             interval: 30,
             vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
-            linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+            linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+            account: vm.envAddress("PUBLIC_KEY_DEPLOYER_ACCOUNT")
         });
     }
 
@@ -113,7 +116,8 @@ contract HelperConfig is CodeConstants, Script {
             entranceFee: 0.01 ether,
             interval: 30,
             vrfCoordinator: address(vrfCoordinatorV2_5Mock),
-            linkToken: address(linkToken)
+            linkToken: address(linkToken),
+            account: FOUNDRY_DEFAULT_SENDER
         });
 
         return localNetworkConfig;

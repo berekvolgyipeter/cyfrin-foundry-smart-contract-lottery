@@ -24,6 +24,9 @@ build:; forge build
 
 test :; forge test -vvv
 
+testForkSepolia :; @forge test --fork-url $(RPC_URL_SEPOLIA) -vvv
+
+
 coverage :; forge coverage -vvv
 
 coverageLcov :; forge coverage --report lcov

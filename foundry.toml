@@ -19,7 +19,8 @@ mainnet = { key = "${ETHERSCAN_API_KEY}" }
 sepolia = { key = "${ETHERSCAN_API_KEY}" }
 
 [rpc_endpoints]
-sepolia = "${SEPOLIA_RPC_URL}"
+mainnet = "${RPC_URL_MAINNET}"
+sepolia = "${RPC_URL_SEPOLIA}"
 
 [dependencies]
 forge-std = { version = "1.9.2" }
