@@ -61,6 +61,9 @@ addConsumer:
 fundSubscription:
 	@forge script script/Interactions.s.sol:FundSubscription $(NETWORK_ARGS)
 
+enterRaffle:
+	@forge script script/Interactions.s.sol:EnterRaffle $(NETWORK_ARGS)
+
 checkEtherscanApi:
 	@response_mainnet=$$(curl -s "https://api.etherscan.io/api?module=account&action=balance&address=$(PUBLIC_KEY_DEV)&tag=latest&apikey=$(ETHERSCAN_API_KEY)"); \
 	echo "Mainnet:" $$response_mainnet; \
