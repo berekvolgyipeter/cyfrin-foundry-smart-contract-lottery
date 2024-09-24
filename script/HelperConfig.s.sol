@@ -19,7 +19,13 @@ abstract contract CodeConstants {
     uint256 public constant LOCAL_CHAIN_ID = 31337;
 }
 
-contract HelperConfig is CodeConstants, Script {
+abstract contract PersonalDataScript is Script {
+    address immutable PUBLIC_KEY_DEPLOYER_ACCOUNT = vm.envAddress("PUBLIC_KEY_DEPLOYER_ACCOUNT");
+    uint256 immutable SUBSCRIPTION_ID_MAINNET = vm.envUint("SUBSCRIPTION_ID_MAINNET");
+    uint256 immutable SUBSCRIPTION_ID_SEPOLIA = vm.envUint("SUBSCRIPTION_ID_SEPOLIA");
+}
+
+contract HelperConfig is CodeConstants, PersonalDataScript {
     /* ---------- Errors ---------- */
     error HelperConfig__InvalidChainId();
 
@@ -67,28 +73,28 @@ contract HelperConfig is CodeConstants, Script {
     function getMainnetEthConfig() public view returns (NetworkConfig memory mainnetNetworkConfig) {
         // https://docs.chain.link/vrf/v2-5/supported-networks#ethereum-mainnet
         mainnetNetworkConfig = NetworkConfig({
-            subscriptionId: vm.envUint("SUBSCRIPTION_ID_MAINNET"), // If left as 0, our scripts will create one!
+            subscriptionId: SUBSCRIPTION_ID_MAINNET, // If left as 0, our scripts will create one!
             keyHash: 0x9fe0eebf5e446e3c998ec9bb19951541aee00bb90ea201ae456421a2ded86805,
             callbackGasLimit: 500_000,
             entranceFee: 0.01 ether,
             interval: 30,
             vrfCoordinator: 0x271682DEB8C4E0901D1a1550aD2e64D568E69909,
             linkToken: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
-            account: vm.envAddress("PUBLIC_KEY_DEPLOYER_ACCOUNT")
+            account: PUBLIC_KEY_DEPLOYER_ACCOUNT
         });
     }
 
     function getSepoliaEthConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig) {
         // https://docs.chain.link/vrf/v2-5/supported-networks#sepolia-testnet
         sepoliaNetworkConfig = NetworkConfig({
-            subscriptionId: vm.envUint("SUBSCRIPTION_ID_SEPOLIA"), // If left as 0, our scripts will create one!
+            subscriptionId: SUBSCRIPTION_ID_SEPOLIA, // If left as 0, our scripts will create one!
             keyHash: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
             callbackGasLimit: 500_000,
             entranceFee: 0.01 ether,
             interval: 30,
             vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
             linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
-            account: vm.envAddress("PUBLIC_KEY_DEPLOYER_ACCOUNT")
+            account: PUBLIC_KEY_DEPLOYER_ACCOUNT
         });
     }
 
