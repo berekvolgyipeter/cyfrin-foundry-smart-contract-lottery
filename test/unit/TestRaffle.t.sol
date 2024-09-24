@@ -1,46 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {Test, console2} from "forge-std/Test.sol";
+import {console2} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {VRFCoordinatorV2_5Mock} from "chainlink/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
-import {DeployRaffle} from "script/DeployRaffle.s.sol";
-import {CodeConstants, HelperConfig} from "script/HelperConfig.s.sol";
+import {TestRaffle} from "test/utils/Setup.sol";
 import {Raffle} from "src/Raffle.sol";
-
-abstract contract TestRaffle is Test {
-    Raffle public raffle;
-    HelperConfig public helperConfig;
-
-    address public PLAYER = makeAddr("player");
-    uint256 public constant STARTING_PLAYER_BALANCE = 10 ether;
-
-    HelperConfig.NetworkConfig cfg;
-
-    event EnteredRaffle(address indexed player);
-    event WinnerPicked(address indexed winner);
-
-    function setUp() external {
-        DeployRaffle deployer = new DeployRaffle();
-        (raffle, helperConfig) = deployer.run();
-
-        cfg = helperConfig.getConfig();
-
-        vm.deal(PLAYER, STARTING_PLAYER_BALANCE);
-    }
-
-    modifier enteredRaffle() {
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: cfg.entranceFee}();
-        _;
-    }
-
-    modifier intervalPassed() {
-        vm.warp(block.timestamp + cfg.interval + 1); // cheat code to modify block timestamp
-        vm.roll(block.number + 1); // cheat code to modify block number
-        _;
-    }
-}
 
 contract TestRaffleInit is TestRaffle {
     function testRaffleInitialStateIsOpen() public view {
@@ -147,15 +112,7 @@ contract TestPerformUpKeep is TestRaffle {
     }
 }
 
-contract TestFulfillRandomWords is TestRaffle, CodeConstants {
-    modifier skipFork() {
-        // in fork tests the VRF contracts can only be called by chainlink nodes
-        if (block.chainid != LOCAL_CHAIN_ID) {
-            vm.skip(true);
-        }
-        _;
-    }
-
+contract TestFulfillRandomWords is TestRaffle {
     function testCanOnlyBeCalledAfterPerformUpkeep(uint256 requestId) public enteredRaffle intervalPassed skipFork {
         vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
         VRFCoordinatorV2_5Mock(cfg.vrfCoordinator).fulfillRandomWords(requestId, address(raffle));
@@ -181,8 +138,8 @@ contract TestFulfillRandomWords is TestRaffle, CodeConstants {
         vm.recordLogs();
         raffle.performUpkeep(""); // emits requestId
         Vm.Log[] memory entries = vm.getRecordedLogs();
-        console2.logBytes32(entries[1].topics[1]);
         bytes32 requestId = entries[1].topics[1]; // get the requestId from the logs
+        console2.log("requestId", uint256(requestId));
 
         VRFCoordinatorV2_5Mock(cfg.vrfCoordinator).fulfillRandomWords(uint256(requestId), address(raffle));
 

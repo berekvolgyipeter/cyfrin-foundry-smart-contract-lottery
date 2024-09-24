@@ -5,6 +5,7 @@ import {Script, console2} from "forge-std/Script.sol";
 import {DevOpsTools} from "foundry-devops/DevOpsTools.sol";
 import {VRFCoordinatorV2_5Mock} from "chainlink/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 import {CodeConstants, HelperConfig} from "script/HelperConfig.s.sol";
+import {Raffle} from "src/Raffle.sol";
 import {LinkToken} from "test/mocks/LinkToken.sol";
 
 contract CreateSubscription is Script {
@@ -103,5 +104,20 @@ contract AddConsumer is Script {
     function run() external {
         address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("Raffle", block.chainid);
         addConsumerUsingConfig(mostRecentlyDeployed);
+    }
+}
+
+contract EnterRaffle is Script {
+    function enterRaffle(address raffle, address player) public {
+        uint256 entraceFee = Raffle(raffle).getEntranceFee();
+
+        vm.startBroadcast(player);
+        Raffle(raffle).enterRaffle{value: entraceFee}();
+        vm.stopBroadcast();
+    }
+
+    function run() external {
+        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("Raffle", block.chainid);
+        enterRaffle(mostRecentlyDeployed, msg.sender);
     }
 }
