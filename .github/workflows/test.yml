@@ -15,6 +15,11 @@ jobs:
 
     name: Foundry project
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_KEY_DEPLOYER_ACCOUNT: 0x0
+      SUBSCRIPTION_ID_SEPOLIA: 0
+      SUBSCRIPTION_ID_MAINNET: 0
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,10 +44,6 @@ jobs:
         id: fmt
 
       - name: Run Forge build
-        env:
-          PUBLIC_KEY_DEPLOYER_ACCOUNT: 0x0
-          SUBSCRIPTION_ID_SEPOLIA: 0
-          SUBSCRIPTION_ID_MAINNET: 0
         run: |
           forge build --sizes
         id: build
