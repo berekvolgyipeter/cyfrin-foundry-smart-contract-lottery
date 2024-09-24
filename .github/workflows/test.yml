@@ -7,9 +7,6 @@ on:
 
 env:
   FOUNDRY_PROFILE: ci
-  PUBLIC_KEY_DEPLOYER_ACCOUNT: 0x0
-  SUBSCRIPTION_ID_SEPOLIA: 0
-  SUBSCRIPTION_ID_MAINNET: 0
 
 jobs:
   check:
@@ -40,6 +37,12 @@ jobs:
         run: |
           forge fmt --check
         id: fmt
+
+      - name: Load test environment variables
+        run: |
+          set -a
+          source .env.test
+          set +a
 
       - name: Run Forge build
         run: |
