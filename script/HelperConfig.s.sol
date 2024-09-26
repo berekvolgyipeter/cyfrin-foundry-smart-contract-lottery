@@ -107,7 +107,7 @@ contract HelperConfig is CodeConstants, PersonalDataScript {
         console2.log(unicode"⚠️ You have deployed a mock conract!");
         console2.log("Make sure this was intentional");
 
-        vm.startBroadcast();
+        vm.startBroadcast(ANVIL_PUBLIC_KEY_0);
         VRFCoordinatorV2_5Mock vrfCoordinatorV2_5Mock =
             new VRFCoordinatorV2_5Mock(MOCK_BASE_FEE, MOCK_GAS_PRICE_LINK, MOCK_WEI_PER_UNIT_LINK);
         LinkToken linkToken = new LinkToken();
