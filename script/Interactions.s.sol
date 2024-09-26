@@ -108,16 +108,23 @@ contract AddConsumer is Script {
 }
 
 contract EnterRaffle is Script {
-    function enterRaffle(address raffle, address player) public {
+    function enterRaffle(address raffle, address account) public {
         uint256 entraceFee = Raffle(raffle).getEntranceFee();
 
-        vm.startBroadcast(player);
+        vm.startBroadcast(account);
         Raffle(raffle).enterRaffle{value: entraceFee}();
         vm.stopBroadcast();
     }
 
+    function enterRaffleUsingConfig(address raffle) public {
+        HelperConfig helperConfig = new HelperConfig();
+        HelperConfig.NetworkConfig memory cfg = helperConfig.getConfig();
+
+        enterRaffle(raffle, cfg.account);
+    }
+
     function run() external {
         address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("Raffle", block.chainid);
-        enterRaffle(mostRecentlyDeployed, msg.sender);
+        enterRaffleUsingConfig(mostRecentlyDeployed);
     }
 }

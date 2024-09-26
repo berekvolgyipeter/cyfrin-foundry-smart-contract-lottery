@@ -12,7 +12,7 @@ abstract contract CodeConstants {
     int256 public constant MOCK_WEI_PER_UNIT_LINK = 4e15;
     uint256 public constant MOCK_FUND_AMOUNT = 100 ether;
 
-    address public constant FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
+    address public constant ANVIL_PUBLIC_KEY_0 = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     uint256 public constant ETH_SEPOLIA_CHAIN_ID = 11155111;
     uint256 public constant ETH_MAINNET_CHAIN_ID = 1;
@@ -123,7 +123,7 @@ contract HelperConfig is CodeConstants, PersonalDataScript {
             interval: 30,
             vrfCoordinator: address(vrfCoordinatorV2_5Mock),
             linkToken: address(linkToken),
-            account: FOUNDRY_DEFAULT_SENDER
+            account: ANVIL_PUBLIC_KEY_0
         });
 
         return localNetworkConfig;
