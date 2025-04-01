@@ -1,5 +1,7 @@
 # cyfrin-foundry-smart-contract-lottery
 
+This is a section of the [Cyfrin Foundry Solidity Course](https://github.com/Cyfrin/foundry-full-course-cu?tab=readme-ov-file#foundry-fundamentals-section-4-foundry-smart-contract-lottery).
+
 This project implements a simple raffle contract. Players can enter the raffle with a specified amount of ETH.
 The raffle selects a winner using Chainlink VRF after a predefined amount of has passed and there's at least one entrant.
 When a winner is selecter the raffle resets and players can enter again for a new round. The raffle is automated via Chainlink Automation.
