@@ -7,7 +7,7 @@ import {VRFV2PlusClient} from "chainlink/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {AutomationCompatibleInterface} from "chainlink/automation/interfaces/AutomationCompatibleInterface.sol";
 
 /**
- * @title A sample Raffle Contract
+ * @title A simple Raffle Contract
  * @author Peter Berekvolgyi
  * @notice This contract is for creating a sample raffle contract
  * @dev This implements the Chainlink VRF Version 2.5
